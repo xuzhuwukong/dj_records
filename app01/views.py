@@ -151,10 +151,10 @@ def record_add(request):
             )
             book_obj.authors.add(*book_author_id_list)
             print("已新增订单", book_name)
-            return redirect("/engineers/")
+            return redirect("/records/")
         else:
             pass
-    return render(request, 'engineer_add.html', {
+    return render(request, 'record_add.html', {
         "user_login": auth.get_user(request),
         "publish_obj": publish_obj,
         "author_obj": author_obj,
