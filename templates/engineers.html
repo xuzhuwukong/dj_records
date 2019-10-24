@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block active_status %}
+    <li class="active"><a href="">工程师</a></li>
+{% endblock %}
+
+{% block content %}
+
+    <h4>
+        <a href="/engineer/add/">添加工程师</a>
+    </h4>
+    <table class="table table-bordered table-hover table-striped">
+        <thead>
+        <tr>
+            <td>编号</td>
+            <td>名称</td>
+            <td>邮箱</td>
+            <td>地址</td>
+            <td>操作</td>
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for publish in publish_obj %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ publish.name }}</td>
+                <td>{{ publish.email }}</td>
+                <td>{{ publish.addr }}</td>
+                <td>
+                    <a href="{{ publish.pk }}/edit/" class="btn btn-primary">编辑</a>
+                    <a href="{{ publish.pk }}/delete/" class="btn btn-danger">删除</a>
+                </td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+
+{% endblock %}

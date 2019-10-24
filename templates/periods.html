@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block active_status %}
+    <li class="active"><a href="">维修时间</a></li>
+{% endblock %}
+
+{% block content %}
+
+    <h4>
+        <a href="/periods/add/">添加维修时间</a>
+    </h4>
+    <table class="table table-bordered table-hover table-striped">
+        <thead>
+        <tr>
+            <td>编号</td>
+            <td>姓名</td>
+            <td>订单</td>
+            <td>操作</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for author in authors_obj %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ author.name }}</td>
+                <td>{% for author_book in author.book_set.all %}
+                    <p>《{{ author_book.title }}》</p>
+                    <p>《{{ author_book.publish.name }}》</p>
+                {% endfor %}
+                </td>
+                <td>
+                    <a href="{{ author.pk }}/edit/" class="btn btn-primary">编辑</a>
+                    <a href="{{ author.pk }}/delete/" class="btn btn-danger">删除</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+<script type="text/javascript">
+$(document).ready(function(){
+	$("table tr").each(function(){
+		alert($(this).text());
+	});
+});
+</script>
+{% endblock %}
+

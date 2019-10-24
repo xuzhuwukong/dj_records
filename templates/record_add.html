@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+    <div class="panel panel-info my-panel">
+        <div class="panel-heading">
+            <h3 class="panel-title">添加订单</h3>
+        </div>
+        <div class="panel-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="book_name">订单号：</label>
+                    <input type="text" class="form-control" id="book_name" name="book_name"
+                           value="{{ book_obj.title }}">
+                </div>
+                <div class="form-group">
+                    <label for="book_price">价格：</label>
+                    <input type="text" class="form-control" id="book_price" name="book_price"
+                           value="{{ book_obj.price }}">
+                </div>
+                <div class="form-group">
+                    <label for="book_pub_date">维修日期：</label>
+                    <input type="date" class="form-control" id="book_pub_date" name="book_pub_date"
+                           value="{{ book_obj.publish_date|date:"Y-m-d" }}">
+                </div>
+                <div class="form-group">
+                    <label for="book_pub_id">工程师：</label>
+                    <select class="form-control" name="book_pub_id" id="book_pub_id">
+                        {% if not publish_obj %}
+                            <a href="/publish/add/">尚无工程师，点击添加工程师</a>
+                        {% else %}
+                            {% for publish in publish_obj %}
+                                {% if book_obj.publish == publish %}
+                                    <option value="{{ publish.pk }}" selected>{{ publish.name }}</option>
+                                {% else %}
+                                    <option value="{{ publish.pk }}">{{ publish.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="book_author_id_list">维修时间：</label>
+                    <select class="form-control" name="book_author_id_list" id="book_author_id_list"
+                            multiple>
+                        {% if not author_obj %}
+                            <a href="/authors/add/">尚无维修时间，点击添加维修时间</a>
+                        {% else %}
+                            {% for author in author_obj %}
+                                {% if author in book_obj.authors.all %}
+                                    <option value="{{ author.pk }}" selected>{{ author.name }}</option>
+                                {% else %}
+                                    <option value="{{ author.pk }}">{{ author.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <input type="submit" class="btn btn-default">
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
