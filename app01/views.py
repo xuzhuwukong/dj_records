@@ -133,7 +133,7 @@ def record_add(request):
         if book_status.is_valid():
             book_name = request.POST.get("book_name")
             # 检查订单是否已存在：
-            book_name_check = models.Engineer.objects.filter(title=book_name)
+            book_name_check = models.Record.objects.filter(title=book_name)
             if book_name_check:
                 response_msg = "《" + book_name + "》" + "订单已存在，请重新输入！"
                 print(response_msg)
@@ -143,13 +143,13 @@ def record_add(request):
             book_pub_date = request.POST.get("book_pub_date")
             book_pub_id = request.POST.get("book_pub_id")
             book_author_id_list = request.POST.getlist("book_author_id_list")
-            book_obj = models.Engineer.objects.create(
+            book_obj = models.Record.objects.create(
                 title=book_name,
                 price=book_price,
                 publish_date=book_pub_date,
-                publish_id=book_pub_id,
+                engineer_id=book_pub_id,
             )
-            book_obj.authors.add(*book_author_id_list)
+            book_obj.periods.add(*book_author_id_list)
             print("已新增订单", book_name)
             return redirect("/records/")
         else:
@@ -164,10 +164,10 @@ def record_add(request):
 # 删除订单
 @login_required()
 def record_delete(request, book_id):
-    book_obj = models.Engineer.objects.filter(nid=book_id).first()
+    book_obj = models.Record.objects.filter(nid=book_id).first()
     print("已删除订单", book_obj.title)
     book_obj.delete()
-    return redirect("/engineers/")
+    return redirect("/records/")
 
 
 # 编辑订单信息
