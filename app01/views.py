@@ -232,7 +232,7 @@ def record_edit(request, book_id):
                 # 将字符串格式的列表转换为真正的列表：
                 book_author_id_list = json.loads(book_author_id_list)
 
-                models.Book.objects.filter(nid=book_id).update(
+                models.Record.objects.filter(nid=book_id).update(
                     title=book_name,
                     price=book_price,
                     publish_date=book_pub_date,
@@ -331,13 +331,27 @@ def logout(request):
     auth.logout(request)
     return redirect("/login/")
 
-def add_article(request):
+
+def orders(request):
+    orders_obj = models.Order.objects.all()
+    return render(request, 'orders.html', {"orders_obj": orders_obj, "user_login": auth.get_user(request)})
+
+
+
+def add_order(request):
     """
     后台管理的添加订单视图函数
     :param request:
     :return:
     """
+    order_list_to_insert = []
     if request.method == "POST":
         content = request.POST.get("content")
-        print(content)
-    return render(request, "add_article.html")
+        content = content.strip("\r\n").split("\r\n")
+        if(content[0].split("\t")[0] == "Customer PO#" and content[0].split("\t")[-1]=="Total Price (converted).amount"):
+            for c in content[1:]:
+                print(c.split("\t"))
+                order_list_to_insert.append(models.Order(*c))
+            models.Order.objects.bulk_create(order_list_to_insert)
+        return redirect("/orders/")
+    return render(request, "add_order.html")

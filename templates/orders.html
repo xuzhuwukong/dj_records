@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block active_status %}
+    <li class="active"><a href="">订单</a></li>
+{% endblock %}
+
+{% block content %}
+
+    <h4>
+        <a href="add/">添加订单</a>
+    </h4>
+    <table id ="myTable" class="table table-bordered table-hover table-striped">
+        <thead>
+        <tr>
+            <td>编号</td>
+            <td>订单号</td>
+            <td>价格</td>
+            <td>维修时间</td>
+            <td>创建日期</td>
+            <td>工程师</td>
+            <td>操作</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for record in orders_obj %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+
+                <td>{{ record.po_name }}</td>
+                <td>{{ record.open_date|date:"Y-m-d" }}</td>
+                <td>{{ record.case_number }}</td>
+                <td>{{ record.account_name }}</td>
+                <td>{{ record.product_code }}</td>
+                <td>{{ record.serial_number }}</td>
+                <td>{{ record.cost_type }}</td>
+                <td>{{ record.internal_summary }}</td>
+                <td>{{ record.promise_date|date:"Y-m-d" }}</td>
+                <td>{{ record.total_price }}</td>
+                <td>
+                    {#                    <a href="{{ book.pk }}/edit/" class="btn btn-info" id="edit_book">编辑</a>#}
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-primary btn-group-sm my-edit" data-toggle="modal"
+                            data-target="#myModal" id="edit_btn_{{ record.pk }}">编辑
+                    </button>
+                    <a href="{{ record.pk }}/delete/" class="btn btn-danger">删除</a>
+                    <!--设置锚点，获取book对象的主键给ajax使用：-->
+                    <span class="hidden">{{ record.pk }}</span>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">修改订单</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="panel panel-info my-panel">
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label for="book_name">订单号：</label>
+                                <input type="text" class="form-control" id="book_name" name="book_name"
+                                       value="{{ record_obj.title }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="book_price">价格：</label>
+                                <input type="text" class="form-control" id="book_price" name="book_price"
+                                       value="{{ record_obj.price }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="book_pub_date">创建日期：</label>
+                                <input type="date" class="form-control" id="book_pub_date" name="book_pub_date"
+                                       value="{{ record_obj.publish_date|date:"Y-m-d" }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="book_pub_id">工程师：</label>
+                                <select class="form-control" name="book_pub_id" id="book_pub_id">
+                                    {% if not engineer_obj %}
+                                        <a href="/engineer/add/">尚无工程师，点击添加工程师</a>
+                                    {% else %}
+                                        {% for engineer in engineer_obj %}
+                                            {% if record_obj.engineer == engineer %}
+                                                <option value="{{ engineer.pk }}"
+                                                        selected>{{ engineer.name }}</option>
+                                            {% else %}
+                                                <option value="{{ engineer.pk }}">{{ engineer.name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="engineer_period_id_list">维修时间：</label>
+                                <select class="form-control engineer_period_id_list" name="engineer_period_id_list"
+                                        id="engineer_period_id_list"
+                                        multiple>
+                                    {% if not period_obj %}
+                                        <a href="/periods/add/">尚无维修时间，点击添加维修时间</a>
+                                    {% else %}
+                                        {% for period in period_obj %}
+                                            {% if period in record_obj.periods.all %}
+                                                <option value="{{ period.pk }}" selected>{{ period.name }}</option>
+                                            {% else %}
+                                                <option value="{{ period.pk }}">{{ period.name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="confirm_edit" data-dismiss="modal">确认更改</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // 定义全局变量：在两个事件中都要用到：
+        var current_book_pk_id;
+        $(document).ready( function () {
+            $('#myTable').DataTable();
+        } );
+        // 定义【编辑按钮】的事件：
+        $(".my-edit").click(function () {
+            // ajax跨域设置：
+            $.ajaxSetup({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                },
+            });
+
+            // 获取当前书籍在models中的主键：
+            current_book_pk_id = $(this).siblings('.hidden').text();
+
+            // 获取模态框里当前编辑的书籍的各个表单的数据，并填充：
+            $.ajax({
+                url: "/books/" + current_book_pk_id + "/edit/",
+                type: "post",
+                data: {
+                    "current_book_pk_id": current_book_pk_id,
+                    "post_flag": "edit_btn",
+                },
+                success: function (recv_data) {
+                    recv_data = JSON.parse(recv_data);
+                    {#console.log(recv_data);#}
+                    $('.modal-body #book_name').val(recv_data.book_name);
+                    $('.modal-body #book_price').val(recv_data.book_price);
+                    $('.modal-body #book_pub_date').val(recv_data.book_pub_date);
+
+                    $('.modal-body #book_pub_id').empty();
+                    for (let i of recv_data.new_publish_obj_dict) {
+                        if (recv_data.book_pub_id === i[0]) {
+                            $('.modal-body #book_pub_id').append(
+                                "<option value=" + i[0] + " selected>" + i[1] + "</option>"
+                            );
+                        } else {
+                            $('.modal-body #book_pub_id').append(
+                                "<option value=" + i[0] + ">" + i[1] + "</option>"
+                            );
+                        }
+                    }
+
+                    // ############################ 如下for循环，展示书籍已有的作者信息，有显示不准确的问题：
+                    $('.modal-body #book_author_id_list').empty();
+
+                    console.log(typeof recv_data.new_author_obj_dict, recv_data.new_author_obj_dict);
+                    console.log(typeof recv_data.new_book_author_id_list, recv_data.new_book_author_id_list);
+
+                    for (let i of recv_data.new_author_obj_dict) {
+                        if (i.pk in recv_data.new_book_author_id_list) {
+                            console.log(typeof i, i.pk);
+
+                            $('.modal-body #book_author_id_list').append(
+                                "<option value=" + i.pk + " selected>" + i.name + "</option>"
+                            );
+                        } else {
+                            console.log(i);
+
+                            $('.modal-body #book_author_id_list').append(
+                                "<option value=" + i.pk + ">" + i.name + "</option>"
+                            );
+                        }
+                    }
+                }
+            });
+        });
+
+        // 定义模态框中【确认更改】按钮的事件，用于向后台提交修改后的信息:
+        $("#confirm_edit").click(function () {
+
+            $.ajaxSetup({
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                },
+            });
+
+            let post_book_name = $('.modal-body #book_name').val();
+            let post_book_price = $('.modal-body #book_price').val();
+            let post_book_pub_date = $('.modal-body #book_pub_date').val();
+            let post_book_pub_id = $('.modal-body #book_pub_id').val();
+            {#let post_book_author_id_list = $('.modal-body #book_author_id_list option[selected]');#}
+
+
+            //######################### 如下1行，选择被选中的option标签功能有问题：
+            {#let post_book_author_id_list = $('.modal-body .book_author_id_list option[selected]');#}
+            {#let post_book_author_id_list = $('.modal-body .book_author_id_list option');#}
+            {##}
+            {#console.log('============', post_book_author_id_list);#}
+
+
+            // 大神提供的代码，解决了【获取不到已选中的作者】问题：
+            let post_book_author_id_list = [];
+            $("#book_author_id_list :selected").each(function () {
+                post_book_author_id_list.push($(this).val());
+            });
+            console.log(post_book_author_id_list, '========');
+
+
+            $.ajax({
+                url: "/books/" + current_book_pk_id + "/edit/",
+                type: "post",
+                {#contentType: "application/json",#}
+                dataType: "json",
+                data: {
+                    "current_book_pk_id": current_book_pk_id,
+                    "post_book_name": post_book_name,
+                    "post_book_price": post_book_price,
+                    "post_book_pub_date": post_book_pub_date,
+                    "post_book_pub_id": post_book_pub_id,
+                    // 将列表数据转为json字符串以后才能正确发送：
+                    "post_book_author_id_list": JSON.stringify(post_book_author_id_list),
+                },
+                success: function (recv_data) {
+                    console.log(JSON.parse(recv_data));
+                    location.href="http://127.0.0.1:8000/books/";
+                },
+            })
+        });
+
+    </script>
+
+{% endblock %}

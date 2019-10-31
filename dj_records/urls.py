@@ -37,7 +37,8 @@ urlpatterns = [
     re_path(r'engineers/(\d+)/delete/', views.engineer_delete),
     re_path(r'engineers/(\d+)/edit/', views.engineer_edit),
 
-    re_path(r'backend/add_article/$',views.add_article),
+    re_path(r'orders/$', views.orders),
+    re_path(r'orders/add/$',views.add_order),
 
     re_path(r'^$', views.login),
 ]
