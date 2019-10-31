@@ -330,3 +330,14 @@ def logout(request):
     print(auth.get_user(request), "注销登陆！")
     auth.logout(request)
     return redirect("/login/")
+
+def add_article(request):
+    """
+    后台管理的添加订单视图函数
+    :param request:
+    :return:
+    """
+    if request.method == "POST":
+        content = request.POST.get("content")
+        print(content)
+    return render(request, "add_article.html")
